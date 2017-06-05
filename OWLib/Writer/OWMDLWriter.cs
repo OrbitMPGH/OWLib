@@ -71,11 +71,16 @@ namespace OWLib.Writer {
             if (chunk != null) {
                 hardpoints = (PRHM)chunk;
             }
+            chunk = chunked.FindNextChunk("LOCM").Value;
+            LOCM modelbox = null;
+            if (chunk != null) {
+                modelbox = (LOCM)chunk;
+            }
 
             //Console.Out.WriteLine("Writing OWMDL");
             using (BinaryWriter writer = new BinaryWriter(output)) {
-                writer.Write((ushort)1); // version major
-                writer.Write((ushort)1); // version minor
+                writer.Write((ushort)2); // version major
+                writer.Write((ushort)0); // version minor
 
                 if (data.Length > 1 && data[1] != null && data[1].GetType() == typeof(string) && ((string)data[1]).Length > 0) {
                     writer.Write((string)data[1]);
@@ -88,6 +93,8 @@ namespace OWLib.Writer {
                 } else {
                     writer.Write((byte)0);
                 }
+
+                writer.Write(14); // header size. ushort + uint + uint + uint
 
                 if (skeleton == null) {
                     writer.Write((ushort)0); // number of bones
@@ -129,6 +136,12 @@ namespace OWLib.Writer {
                     writer.Write(hardpoints.HardPoints.Length);
                 } else {
                     writer.Write((int)0); // number of attachments
+                }
+
+                if (modelbox != null) {
+                    writer.Write(modelbox.Simple.Length);
+                } else {
+                    writer.Write((int)0); // number of hitboxes
                 }
 
                 if (skeleton != null) {
@@ -225,6 +238,28 @@ namespace OWLib.Writer {
                     for (int i = 0; i < hardpoints.HardPoints.Length; ++i) {
                         PRHM.HardPoint hp = hardpoints.HardPoints[i];
                         writer.Write(IdToString("bone", hp.id));
+                    }
+                }
+
+                if (modelbox != null) {
+                    // hitboxes
+                    for (int i = 0; i < modelbox.Simple.Length; ++i) {
+                        LOCM.SimpleBox box = modelbox.Simple[i];
+                        writer.Write(box.name_id);
+                        writer.Write(box.attachment_id);
+                        unsafe
+                        {
+                            writer.Write(box.matrix.Value[8]);
+                            writer.Write(box.matrix.Value[9]);
+                            writer.Write(box.matrix.Value[10]);
+                            writer.Write(box.matrix.Value[4]);
+                            writer.Write(box.matrix.Value[5]);
+                            writer.Write(box.matrix.Value[6]);
+                            writer.Write(box.matrix.Value[0]);
+                            writer.Write(box.matrix.Value[1]);
+                            writer.Write(box.matrix.Value[2]);
+                            writer.Write(box.matrix.Value[3]);
+                        }
                     }
                 }
             }

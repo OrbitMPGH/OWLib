@@ -37,9 +37,11 @@ namespace OWLib.Writer {
             get;
         }
 
-        // data is object[] { bool exportAttachments, string materialReference, string modelName, bool onlyOneLOD, bool skipCollision }
+        // data is object[] { bool exportAttachments, string materialReference, string modelName, bool onlyOneLOD, bool skipCollision, bool exportHitbox }
         bool Write(Chunked model, Stream output, List<byte> LODs, Dictionary<ulong, List<ImageLayer>> layers, params object[] data);
+        // data is object[] { }
         bool Write(Map10 physics, Stream output, params object[] data);
+        // data is object[] { }
         bool Write(Animation anim, Stream output, params object[] data);
         Dictionary<ulong, List<string>>[] Write(Stream output, Map map, Map detail1, Map detail2, Map props, Map lights, string name, IDataWriter modelFormat);
     }
