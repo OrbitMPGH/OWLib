@@ -71,6 +71,20 @@ namespace OWLib.Writer {
             if (chunk != null) {
                 hardpoints = (PRHM)chunk;
             }
+            chunk = chunked.FindNextChunk("HTLC").Value;
+            HTLC cloth = null;
+            Dictionary<uint, int> clothName = new Dictionary<uint, int>();
+            List<string> clothNameRoot = new List<string>();
+            if (chunk != null) {
+                cloth = (HTLC)chunk;
+                for (int i = 0; i < cloth.Descriptors.Length; ++i) {
+                    clothNameRoot.Add(cloth.Descriptors[i].Name);
+                    for (uint j = 0; j < cloth.Sys[i].Length; ++j) {
+                        ushort clothSys = cloth.Sys[i][j];
+                        clothName[skeleton.Lookup[clothSys]] = i;
+                    }
+                }
+            }
 
             //Console.Out.WriteLine("Writing OWMDL");
             using (BinaryWriter writer = new BinaryWriter(output)) {
@@ -92,7 +106,7 @@ namespace OWLib.Writer {
                 if (skeleton == null) {
                     writer.Write((ushort)0); // number of bones
                 } else {
-                    writer.Write(skeleton.Data.bonesAbs);
+                    writer.Write((ushort)(skeleton.Data.bonesAbs + clothNameRoot.Count));
                 }
 
                 Dictionary<byte, List<int>> LODMap = new Dictionary<byte, List<int>>();
@@ -105,7 +119,7 @@ namespace OWLib.Writer {
                 for (int i = 0; i < model.Submeshes.Length; ++i) {
                     SubmeshDescriptor submesh = model.Submeshes[i];
                     if (data.Length > 4 && data[4] != null && data[4].GetType() == typeof(bool) && (bool)data[4] == true) {
-                        if ((SubmeshFlags)submesh.flags == SubmeshFlags.COLLISION_MESH) {
+                        if (submesh.flags == SubmeshFlags.COLLISION_MESH) {
                             continue;
                         }
                     }
@@ -138,6 +152,9 @@ namespace OWLib.Writer {
                         if (parent == -1) {
                             parent = (short)i;
                         }
+                        if (parent == 0 && clothName.ContainsKey((uint)i)) {
+                            parent = (short)(skeleton.Data.bonesAbs + clothName[(uint)i]);
+                        }
                         writer.Write(parent);
                         
                         Matrix3x4 bone = skeleton.Matrices34[i];
@@ -154,6 +171,21 @@ namespace OWLib.Writer {
                         writer.Write(rot.Y);
                         writer.Write(rot.Z);
                         writer.Write(rot.W);
+                    }
+                    for (int i = 0; i < clothNameRoot.Count; ++i) {
+                        writer.Write(clothNameRoot[i]);
+                        writer.Write((short)0);
+                        Matrix3x4 bone = skeleton.Matrices34[0];
+                        writer.Write(0.0f);
+                        writer.Write(0.0f);
+                        writer.Write(0.0f);
+                        writer.Write(1.0f);
+                        writer.Write(1.0f);
+                        writer.Write(1.0f);
+                        writer.Write(0.0f);
+                        writer.Write(0.0f);
+                        writer.Write(0.0f);
+                        writer.Write(1.0f);
                     }
                 }
 
