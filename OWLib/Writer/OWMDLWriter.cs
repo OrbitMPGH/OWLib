@@ -172,10 +172,10 @@ namespace OWLib.Writer {
                         writer.Write(rot.Z);
                         writer.Write(rot.W);
                     }
+                    // cloth names
                     for (int i = 0; i < clothNameRoot.Count; ++i) {
                         writer.Write(clothNameRoot[i]);
                         writer.Write((short)0);
-                        Matrix3x4 bone = skeleton.Matrices34[0];
                         writer.Write(0.0f);
                         writer.Write(0.0f);
                         writer.Write(0.0f);
