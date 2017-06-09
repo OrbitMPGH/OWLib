@@ -245,7 +245,7 @@ namespace OWLib.Writer {
                     // attachments
                     for (int i = 0; i < hardpoints.HardPoints.Length; ++i) {
                         PRHM.HardPoint hp = hardpoints.HardPoints[i];
-                        writer.Write(IdToString("attachment_", hp.id));
+                        writer.Write(IdToString("attachment_", hp.id, hp.name));
                         Matrix4 mat = hp.matrix.ToOpenTK();
                         Vector3 pos = mat.ExtractTranslation();
                         Quaternion rot = mat.ExtractRotation();
@@ -265,6 +265,10 @@ namespace OWLib.Writer {
                 }
             }
             return true;
+        }
+        
+        public static string IdToString(string prefix, uint id, uint name) {
+            return $"{prefix}_{id:X4}_{name:X8}";
         }
 
         public static string IdToString(string prefix, uint id) {
