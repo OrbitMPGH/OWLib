@@ -42,18 +42,22 @@ namespace OWLib.Types.Chunk {
         private Matrix3x4[] matrices34;
         private Matrix3x4[] matrices34Inverted;
         private short[] hierarchy;
+        private short[] hierarchy2;
         private ushort[] lookup;
         private uint[] ids;
         private ushort[] system; 
+        private short[] unk6;
 
         public Matrix4[] Matrices => matrices;
         public Matrix4[] MatricesInverted => matricesInverted;
         public Matrix3x4[] Matrices34 => matrices34;
         public Matrix3x4[] Matrices34Inverted => matrices34Inverted;
         public short[] Hierarchy => hierarchy;
+        public short[] Hierarchy2 => hierarchy2;
         public ushort[] Lookup => lookup;
         public uint[] IDs => ids;
         public ushort[] Sys => system; 
+        public short[] Unknown6 => unk6;
 
         public void Parse(Stream input) {
             using (BinaryReader reader = new BinaryReader(input, System.Text.Encoding.Default, true)) {
@@ -65,6 +69,14 @@ namespace OWLib.Types.Chunk {
                     for (int i = 0; i < data.bonesAbs; ++i) {
                         input.Position += 4L;
                         hierarchy[i] = reader.ReadInt16();
+                    }
+                }
+
+                hierarchy2 = new short[data.bonesAbs];
+                input.Position = data.hierarchy2;
+                if (input.Position > 0) {
+                    for (int i = 0; i < data.bonesAbs; ++i) {
+                        hierarchy2[i] = reader.ReadInt16();
                     }
                 }
 
@@ -122,6 +134,14 @@ namespace OWLib.Types.Chunk {
                 if (input.Position > 0) {
                     for (int i = 0; i < data.systemCount; ++i) {
                         system[i] = reader.ReadUInt16();
+                    }
+                }
+
+                unk6 = new short[data.unkStruct6Count];
+                input.Position = data.struct6;
+                if (input.Position > 0) {
+                    for (int i = 0; i < data.unkStruct6Count; ++i) {
+                        unk6[i] = reader.ReadInt16();
                     }
                 }
             }

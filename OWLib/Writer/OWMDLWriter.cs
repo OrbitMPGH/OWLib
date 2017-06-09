@@ -75,13 +75,17 @@ namespace OWLib.Writer {
             HTLC cloth = null;
             Dictionary<uint, int> clothName = new Dictionary<uint, int>();
             List<string> clothNameRoot = new List<string>();
-            if (chunk != null) {
+            if (chunk != null && skeleton != null) {
                 cloth = (HTLC)chunk;
+                cloth.Parse(skeleton);
                 for (int i = 0; i < cloth.Descriptors.Length; ++i) {
                     clothNameRoot.Add(cloth.Descriptors[i].Name);
                     for (uint j = 0; j < cloth.Sys[i].Length; ++j) {
                         ushort clothSys = cloth.Sys[i][j];
-                        clothName[skeleton.Lookup[clothSys]] = i;
+                        if (clothSys < cloth.GlobalSys.Length) {
+                            ushort globClothSys = cloth.GlobalSys[clothSys];
+                            clothName[globClothSys] = i;
+                        }
                     }
                 }
             }
@@ -152,7 +156,7 @@ namespace OWLib.Writer {
                         if (parent == -1) {
                             parent = (short)i;
                         }
-                        if (parent == 0 && clothName.ContainsKey((uint)i)) {
+                        if (clothName.ContainsKey((uint)i)) {
                             parent = (short)(skeleton.Data.bonesAbs + clothName[(uint)i]);
                         }
                         writer.Write(parent);
